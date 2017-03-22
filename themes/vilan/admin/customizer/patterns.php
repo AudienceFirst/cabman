@@ -1,0 +1,36 @@
+<?php
+global $paternArray;
+$imgpatternspath =  get_template_directory_uri() . '/images/patterns/';
+$paternArray = array(
+    'pat01' => $imgpatternspath . 'pat01.png',
+    'pat02' => $imgpatternspath . 'pat02.png',
+    'pat03' => $imgpatternspath . 'pat03.png',
+    'pat04' => $imgpatternspath . 'pat04.png',
+    'pat05' => $imgpatternspath . 'pat05.png',
+    'pat06' => $imgpatternspath . 'pat06.png',
+    'pat07' => $imgpatternspath . 'pat07.png',
+    'pat08' => $imgpatternspath . 'pat08.png',
+    'pat09' => $imgpatternspath . 'pat09.png',
+    'pat10' => $imgpatternspath . 'pat10.png',
+    'pat11' => $imgpatternspath . 'pat11.png',
+    'pat12' => $imgpatternspath . 'pat12.png',
+    'pat13' => $imgpatternspath . 'pat13.png',
+    'pat14' => $imgpatternspath . 'pat14.png',
+    'pat15' => $imgpatternspath . 'pat15.png',
+    'pat16' => $imgpatternspath . 'pat16.png',
+    'pat17' => $imgpatternspath . 'pat17.png',
+    'pat18' => $imgpatternspath . 'pat18.png',
+    'pat19' => $imgpatternspath . 'pat19.png',
+    'pat20' => $imgpatternspath . 'pat20.png',
+    'pat21' => $imgpatternspath . 'pat21.png',
+    'pat22' => $imgpatternspath . 'pat22.png',
+    'pat23' => $imgpatternspath . 'pat23.png',
+    'pat24' => $imgpatternspath . 'pat24.png',
+    'pat25' => $imgpatternspath . 'pat25.png',
+    'pat26' => $imgpatternspath . 'pat26.png',
+    'pat27' => $imgpatternspath . 'pat27.png',
+    'pat28' => $imgpatternspath . 'pat28.png',
+    'pat29' => $imgpatternspath . 'pat29.png',
+    'pat30' => $imgpatternspath . 'pat30.png',
+);
+?>

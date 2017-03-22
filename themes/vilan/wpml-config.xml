@@ -1,0 +1,11 @@
+<wpml-config>
+    <admin-texts>
+        <key name="theme_mods_vilan">
+            <key name="portfolio_cpt_slug"/>
+            <key name="portfolio_related_posts_title"/>
+            <key name="not_found_page_title"/>
+            <key name="not_found_page_description"/>
+            <key name="footer_extras_copyright"/>
+        </key>
+    </admin-texts>
+</wpml-config>

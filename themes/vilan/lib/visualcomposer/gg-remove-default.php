@@ -1,0 +1,12 @@
+<?php
+vc_remove_element("vc_wp_meta");
+vc_remove_element("vc_wp_calendar");
+vc_remove_element("vc_wp_links");
+vc_remove_element("vc_wp_rss");
+vc_remove_element("vc_wp_search");
+vc_remove_element("vc_cta_button");
+vc_remove_element("vc_button");
+vc_remove_element("vc_posts_slider");
+vc_remove_element("vc_carousel");
+vc_remove_element("vc_posts_grid");
+?>
