@@ -513,6 +513,8 @@ body.de #woocommerce_eu_vat_number {
 }
 
 
-
+.payment_method_paypal .about_paypal {
+  display: none;
+}
 
 
