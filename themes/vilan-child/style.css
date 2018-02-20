@@ -465,7 +465,52 @@ footer.site-footer .widget ul li {
 }
 
 
+.contact .wpb_wrapper .nf-form-cont {
+  color: #fff;
+}
 
+.contact *::-webkit-input-placeholder {
+  color: #ffffff!important;
+}
+.contact select {
+  height: 40px!important;
+  color: #fff!important;
+}
+
+.contact .nf-error-wrap.nf-error div {
+  color: #ffffff!important;
+  font-size: 11px;
+  margin-bottom: 20px!important;
+}
+
+.contact .nf-error-wrap.nf-error div {
+  color: #ffffff!important;
+  font-size: 11px;
+  margin-bottom: 20px!important;
+}
+.contact .ninja-forms-field[type=button] {
+  padding: 10px;
+  color: #666;
+  background-color: rgba(255,255,255,1);
+  border: thin solid #999;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+
+
+
+#ship-to-different-address input {
+  margin-top: 7px;
+}
+#ship-to-different-address span {
+  padding-left: 30px;
+}
+
+
+body.de #woocommerce_eu_vat_number {
+  display: none!important;
+}
 
 
 

@@ -29,11 +29,11 @@ class RMA_PDF extends mPDF
 		$this->SetTextColor(0,0,0);
 		if($rma['product'] === "Cabman BCT")
 		{
-			$this->Cell(40,6,'Product:','LRB');
+			$this->Cell(30,6,'Product:','LRB');
 			$this->SetFont('Arial','',11);
-			$this->Cell(36,6,$rma['product'],'LRB');
+			$this->Cell(56,6,$rma['product'],'LRB');
 			$this->SetFont('Arial','B',11);
-			$this->Cell(50,6,'Serienummer:','LRB');
+			$this->Cell(40,6,'Serienummer:','LRB');
 			$this->SetFont('Arial','',11);
 			$this->Cell(50,6,$rma['serial'],'LRB');
 			$this->Ln();
@@ -50,17 +50,17 @@ class RMA_PDF extends mPDF
 			$this->SetX(57);
 			$this->SetFont('Arial','',11);
 			$this->MultiCell(136,6,$rma['complaint'],'LRB');
-      $this->SetX(17);
-      $height = $this->y - $oldY;
-      $this->SetY($oldY);
-      $this->SetFont('Arial','B',11);
+			$this->SetX(17);
+			$height = $this->y - $oldY;
+			$this->SetY($oldY);
+			$this->SetFont('Arial','B',11);
 			$this->Cell(40,$height,'Klachtomschrijving:','LRB');
 		}
-		else if($rma['product'] === "Overig")
+		else if($rma['product'] === "Overig" || $rma['product'] === "Anders, namelijk:")
 		{
-			$this->Cell(40,6,'Product:','LRB');
+			$this->Cell(30,6,'Product:','LRB');
 			$this->SetFont('Arial','',11);
-			$this->Cell(46,6,'Overig: '. $rma['other'],'LRB');
+			$this->Cell(56,6,$rma['other'],'LRB');
 			$this->SetFont('Arial','B',11);
 			$this->Cell(40,6,'Serienummer:','LRB');
 			$this->SetFont('Arial','',11);
@@ -70,17 +70,17 @@ class RMA_PDF extends mPDF
 			$this->SetX(57);
 			$this->SetFont('Arial','',11);
 			$this->MultiCell(136,6,$rma['complaint'],'LRB');
-      $this->SetX(17);
-      $height = $this->y - $oldY;
-      $this->SetY($oldY);
-      $this->SetFont('Arial','B',11);
+			$this->SetX(17);
+			$height = $this->y - $oldY;
+			$this->SetY($oldY);
+			$this->SetFont('Arial','B',11);
 			$this->Cell(40,$height,'Klachtomschrijving:','LRB');
 		}
 		else
 		{
-			$this->Cell(40,6,'Product:','LRB');
+			$this->Cell(30,6,'Product:','LRB');
 			$this->SetFont('Arial','',11);
-			$this->Cell(40,6,$rma['product'],'LRB');
+			$this->Cell(50,6,$rma['product'],'LRB');
 			$this->SetFont('Arial','B',11);
 			$this->Cell(40,6,'Serienummer:','LRB');
 			$this->SetFont('Arial','',11);
@@ -90,10 +90,10 @@ class RMA_PDF extends mPDF
 			$this->SetX(57);
 			$this->SetFont('Arial','',11);
 			$this->MultiCell(136,6,$rma['complaint'],'LRB');
-      $this->SetX(17);
-      $height = $this->y - $oldY;
-      $this->SetY($oldY);
-      $this->SetFont('Arial','B',11);
+			$this->SetX(17);
+			$height = $this->y - $oldY;
+			$this->SetY($oldY);
+			$this->SetFont('Arial','B',11);
 			$this->Cell(40,$height,'Klachtomschrijving:','LRB');	
 		}
 	}
@@ -131,7 +131,7 @@ class RMA_PDF extends mPDF
 		$this->SetFont('Arial','',11);
 		$this->Cell($totalWidth / 2,6,$info['companyEmail']);	
 	}
-
+	
 	function AddTotals($totalWidth, $rmas)
 	{
 		$this->SetFont('Arial','B',11);
@@ -150,8 +150,17 @@ class RMA_PDF extends mPDF
 		$totals = array();
 		foreach($rmas as $rma)
 		{		
-			isset($totals[$rma['product']]) ? $totals[$rma['product']]++ : $totals[$rma['product']] = 1;
+			if($rma['product'] === "Overig" || $rma['product'] === "Anders, namelijk:")
+			{
+				$temp = $rma['other'];
+				isset($totals[$temp]) ? $totals[$temp]++ : $totals[$temp] = 1;
+			}
+			else
+			{
+				isset($totals[$rma['product']]) ? $totals[$rma['product']]++ : $totals[$rma['product']] = 1;
+			}
 		}
+		
 		if(array_key_exists('Cabman BCT', $totals))
 		{
 			$this->BCT_present = true;
@@ -181,6 +190,177 @@ class RMA_PDF extends mPDF
 				$this->Cell(($totalWidth / 12) * 3,6,'','LRB');
 			}			
 			$index++;
+		}
+	}
+	
+	function AddContactInfoDE($totalWidth, $info)
+	{	
+		$this->SetFont('Arial','B',11);			
+		$this->SetTextColor(0,0,0);
+		$this->Cell($totalWidth / 2,6,'Name des Unternehmens:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6,$info['companyName']);
+		$this->Ln();
+		$this->SetFont('Arial','B',11);
+		$this->Cell($totalWidth / 2,6,'Anschrift:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6,$info['companyStreet_number']);
+		$this->Ln();
+		$this->SetFont('Arial','B',11);
+		$this->Cell($totalWidth / 2,6,'PLZ Ort:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6,$info['companyPostalCode']. ' ' .$info['companyTown']);		
+		$this->Ln();
+		$this->SetFont('Arial','B',11);
+		$this->Cell($totalWidth / 2,6,'Land:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6, ucwords($info['companyCountry']));		
+		$this->Ln();
+		
+		$this->SetFont('Arial','B',11);
+		$this->Cell($totalWidth / 2,6,'Ansprechpartner:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6,$info['companyPerson']);
+		$this->Ln();
+		$this->SetFont('Arial','B',11);
+		$this->Cell($totalWidth / 2,6,'Telefonnummer:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6,$info['companyPhone']);
+		$this->Ln();
+		$this->SetFont('Arial','B',11);
+		$this->Cell($totalWidth / 2,6,'E-Mail-Adresse:');
+		$this->SetFont('Arial','',11);
+		$this->Cell($totalWidth / 2,6,$info['companyEmail']);	
+	}
+	
+	function AddTotalsDE($totalWidth, $rmas)
+	{
+		$this->SetFont('Arial','B',11);
+		$this->SetFillColor(0,0,0);
+		$this->SetTextColor(255,255,255);
+		$this->Cell($totalWidth / 12,6,'Anzahl', 1, 0, 'L', 1);
+		$this->Cell(($totalWidth / 12) * 3,6,'Produkt',  1, 0, 'L', 1);
+		$this->Cell($totalWidth / 12,6,'Anzahl', 1, 0, 'L', 1);
+		$this->Cell(($totalWidth / 12) * 3,6,'Produkt',  1, 0, 'L', 1);
+		$this->Cell($totalWidth / 12,6,'Anzahl', 1, 0, 'L', 1);
+		$this->Cell(($totalWidth / 12) * 3,6,'Produkt',  1, 0, 'L', 1);
+		$this->Ln();
+		$this->SetTextColor(0,0,0);
+		$this->SetFont('Arial','',11);
+		
+		$totals = array();
+		foreach($rmas as $rma)
+		{		
+			if($rma['product'] === "Overig" || $rma['product'] === "Weitere, nämlich:")
+			{
+				$temp = $rma['other'];
+				isset($totals[$temp]) ? $totals[$temp]++ : $totals[$temp] = 1;
+			}
+			else
+			{
+				isset($totals[$rma['product']]) ? $totals[$rma['product']]++ : $totals[$rma['product']] = 1;
+			}
+		}
+		
+		if(array_key_exists('Cabman BCT', $totals))
+		{
+			$this->BCT_present = true;
+		}
+		
+		$last = key( array_slice( $totals, -1, 1, TRUE ) );		
+		$index = 1;
+		foreach($totals as $key => $total) 
+		{
+			$this->Cell($totalWidth / 12,6,$total,'LRB');
+			$this->Cell(($totalWidth / 12) * 3,6,$key,'LRB');
+			if($index % 3 == 0)
+			{
+				$this->Ln();
+			}
+			if($key == $last && $index % 2 == 0)
+			{
+				$this->Cell($totalWidth / 12,6,'','LRB');
+				$this->Cell(($totalWidth / 12) * 3,6,'','LRB');
+			}
+			else if($key == $last && $index % 1 == 0)
+			{
+				$this->Cell($totalWidth / 12,6,'','LRB');
+				$this->Cell(($totalWidth / 12) * 3,6,'','LRB');
+				$this->Cell($totalWidth / 12,6,'','LRB');
+				$this->Cell(($totalWidth / 12) * 3,6,'','LRB');
+			}			
+			$index++;
+		}
+	}
+
+	function AddTicketDE($rma, $ticketId)
+	{	
+		$this->SetFont('Arial','B',11);	
+		$this->SetFillColor(0,0,0);
+		$this->SetTextColor(255,255,255);
+		$this->Cell(176,6,'Ticket #' . $ticketId, 1, 0, 'L', 1);
+		$this->Ln();
+		$this->SetFillColor(255,255,255);
+		$this->SetTextColor(0,0,0);
+		if($rma['product'] === "Cabman BCT")
+		{
+			$this->Cell(30,6,'Produkt:','LRB');
+			$this->SetFont('Arial','',11);
+			$this->Cell(56,6,$rma['product'],'LRB');
+			$this->SetFont('Arial','B',11);
+			$this->Cell(40,6,'Seriennummer:','LRB');
+			$this->SetFont('Arial','',11);
+			$this->Cell(50,6,$rma['serial'],'LRB');
+			$this->Ln();
+			$oldY = $this->y;
+			$this->SetX(77);
+			$this->SetFont('Arial','',11);
+			$this->MultiCell(116,6,$rma['complaint'],'LRB');
+			$this->SetX(17);
+			$height = $this->y - $oldY;
+			$this->SetY($oldY);
+			$this->SetFont('Arial','B',11);
+			$this->Cell(60,$height,'Beschreibung der Problems:','LRB');
+		}
+		else if($rma['product'] === "Overig" || $rma['product'] === "Weitere, nämlich:")
+		{
+			$this->Cell(30,6,'Produkt:','LRB');
+			$this->SetFont('Arial','',11);
+			$this->Cell(56,6,$rma['other'],'LRB');
+			$this->SetFont('Arial','B',11);
+			$this->Cell(40,6,'Seriennummer:','LRB');
+			$this->SetFont('Arial','',11);
+			$this->Cell(50,6,$rma['serial'],'LRB');	
+			$this->Ln();
+			$oldY = $this->y;
+			$this->SetX(77);
+			$this->SetFont('Arial','',11);
+			$this->MultiCell(116,6,$rma['complaint'],'LRB');
+			$this->SetX(17);
+			$height = $this->y - $oldY;
+			$this->SetY($oldY);
+			$this->SetFont('Arial','B',11);
+			$this->Cell(60,$height,'Beschreibung der Problems:','LRB');
+		}
+		else
+		{
+			$this->Cell(30,6,'Produkt:','LRB');
+			$this->SetFont('Arial','',11);
+			$this->Cell(50,6,$rma['product'],'LRB');
+			$this->SetFont('Arial','B',11);
+			$this->Cell(40,6,'Seriennummer:','LRB');
+			$this->SetFont('Arial','',11);
+			$this->Cell(56,6,$rma['serial'],'LRB');	
+			$this->Ln();
+			$oldY = $this->y;
+			$this->SetX(77);
+			$this->SetFont('Arial','',11);
+			$this->MultiCell(116,6,$rma['complaint'],'LRB');
+			$this->SetX(17);
+			$height = $this->y - $oldY;
+			$this->SetY($oldY);
+			$this->SetFont('Arial','B',11);
+			$this->Cell(60,$height,'Beschreibung der Problems:','LRB');	
 		}
 	}
 }

@@ -109,7 +109,7 @@
                                         <div class="input-group">
                                           <input class="search-field" placeholder="<?php _e('Enter your search term...', 'okthemes'); ?>" type="text" value="" name="s" id="s">
                                           <span class="input-group-btn">
-                                            <input class="header-search-submit" type="submit" value="Go">
+                                            <input class="header-search-submit" type="submit" value=">">
                                           </span>
                                         </div><!-- /input-group -->
                                     </form>

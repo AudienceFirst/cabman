@@ -15,6 +15,8 @@ add_action( 'wp_ajax_send_syskaart_vervangen', 'cabman_send_syskaart_vervangen' 
 add_action( 'wp_ajax_nopriv_send_syskaart_vervangen', 'cabman_send_syskaart_vervangen' );
 add_action( 'wp_ajax_login_zendesk', 'cabman_login_zendesk' );
 add_action( 'wp_ajax_nopriv_login_zendesk', 'cabman_login_zendesk' );
+add_action( 'wp_ajax_send_rmaDE', 'cabman_send_rmaDE' );
+add_action( 'wp_ajax_nopriv_send_rmaDE', 'cabman_send_rmaDE' );
 
 function cabman_send_update(){
 	$parameters = $_POST['parameters'];
@@ -109,20 +111,25 @@ function cabman_send_rma(){
 		
 		// Create a new ticket
 		$body = "";
+		$productName = $rma['other'];
+		if(empty($productName))
+		{
+			$productName = $rma['product'];
+		}
+		
 		if($rma['product'] == "Cabman BCT")
 		{
 			$body = "Product: " . $rma['product'] . "\nSerienummer: " . $rma['serial'] . "\nKenteken: " . $rma['licensePlate'] . "\nKlacht:\n" . $rma['complaint'];
 		}
 		else
 		{
-			$productName = property_exists($rma, 'other') ? $rma['other'] : $rma['product'];
 			$body = "Product: " . $productName . "\nSerienummer: " . $rma['serial'] . "\nKlacht:\n" . $rma['complaint'];
 		}
 		
 		$jsonNewTicket = json_encode(array(
 			"ticket" => array(
 				"requester" => array("name"=>$parameters["companyPerson"], "email"=>$parameters["companyEmail"]),
-				"subject" => "RMA " . (property_exists($rma, 'other') ? $rma['other'] : $rma['product']),
+				"subject" => "RMA " . $productName,
 				"comment" => array("body" => $body),
 				"custom_fields" => array(array("id" => 22042895, "value" => "rma"), array("id" => 24414195, "value" => $rma['product_tag']))
 				)
@@ -134,6 +141,53 @@ function cabman_send_rma(){
 	}
 	
 	$pdf_filename = generate_pdf($fileName, $parameters, $tickets, $zendesk);
+	echo json_encode(array("success"=>true, "tickets"=>$tickets, "responseText"=>$pdf_filename));
+	wp_die(); // this is required to terminate immediately and return a proper response
+}
+
+function cabman_send_rmaDE(){
+	$parameters = $_POST['parameters'];
+	$subdomain = "cabman";	
+	$filePrefix = date("Y-m-d") . "_";
+	$fileSuffix = "_Rücksendeformular.pdf";	
+	$fileName = $filePrefix . str_replace(" ", "_", $parameters['companyName']) . $fileSuffix;
+	
+	$zendesk = new Zendesk("helpdesk@cabman.nl", "Euphoria12!", $subdomain, $suffix = '.json', $test = false);
+	
+	$rmas = $parameters['rmas'];
+	$tickets = array();
+	
+	foreach($rmas as $rma){
+		if(!isset($rma['product']) || !isset($rma['serial']))
+		{
+			echo json_encode(array("error"=>true, "error_message"=>"Niet alle velden zijn ingevuld bij een Product"));
+		}
+		
+		// Create a new ticket
+		$body = "";
+		$productName = $rma['other'];
+		if(empty($productName))
+		{
+			$productName = $rma['product'];
+		}
+		
+		$body = "Produkt: " . $productName . "\nSeriennummer: " . $rma['serial'] . "\nBeschreibung der Problems:\n" . $rma['complaint'];
+		
+		$jsonNewTicket = json_encode(array(
+			"ticket" => array(
+				"requester" => array("name"=>$parameters["companyPerson"], "email"=>$parameters["companyEmail"]),
+				"subject" => "Rücksendung " . $productName,
+				"comment" => array("body" => $body),
+				"custom_fields" => array(array("id" => 22042895, "value" => "rma"), array("id" => 24414195, "value" => $rma['product_tag']))
+				)
+			)
+		);
+		
+		$data = $zendesk->call("/tickets", $jsonNewTicket, "POST");
+		$tickets[] = $data;
+	}
+	
+	$pdf_filename = generate_pdf_DE($fileName, $parameters, $tickets, $zendesk);
 	echo json_encode(array("success"=>true, "tickets"=>$tickets, "responseText"=>$pdf_filename));
 	wp_die(); // this is required to terminate immediately and return a proper response
 }
@@ -156,6 +210,118 @@ function cabman_login_zendesk() {
 		echo json_encode(array('result'=>array('user'=>$user->user, 'organization'=>$organization->organization), 'success'=>1));
 	}
 	wp_die(); 
+}
+
+function generate_pdf_DE($filename, $parameters, $tickets, $zendesk)
+{
+	$mpdf = new RMA_PDF('utf-8');
+	$mpdf->debug = false;
+	$mpdf->ignore_invalid_utf8 = true;
+	$mpdf->AddPage();
+	$mpdf->SetMargins(17,17,17);
+	$mpdf->AliasNbPages();
+	
+	//Top 
+	$logo = get_stylesheet_directory().'/assets/logo-euphoria-international.png';
+	$mpdf->WriteHTML("");
+	$mpdf->Image($logo,17,5,60,25);
+	$mpdf->SetXY(95,10);
+	$mpdf->SetFont('Arial','',11);
+	//Contact Info
+	$mpdf->MultiCell(100,5,"Cabman International BV\nWilhelminapark 36\n5041 EC Tilburg, Niederlande");
+	$mpdf->SetXY(155,10);
+	$mpdf->MultiCell(100,5,"+31(0)13-4609285\nsupport@cabman.de\nwww.cabman.de");	
+	
+	$mpdf->SetFont('Arial','',36);
+	$mpdf->SetXY(45,40);
+	$mpdf->Cell(40,10, 'Rücksendeformular');
+	
+	$mpdf->SetXY(17,60);
+	$mpdf->SetFont('Arial','',11);
+	$mpdf->Cell(100, 6, 'Datum: '. date("d-m-Y"));
+	//Company Info	
+	$mpdf->Ln();
+	$mpdf->Ln();
+	$mpdf->AddContactInfoDE(120, $parameters);
+	
+	$mpdf->Ln();	
+	$mpdf->Ln();
+	$mpdf->SetTextColor(18, 142, 180);
+	$mpdf->SetFont('Arial','',16);
+	$mpdf->Cell(176,10,'Produkte', 'B');	
+	$mpdf->Ln();
+	$mpdf->Ln();
+	$mpdf->AddTotalsDE(176, $parameters['rmas']);
+	//Table		
+	$page_height = 279.4;
+	$index = 0;
+	foreach ($parameters['rmas'] as $rma)
+	{
+		if(($mpdf->y + 35) >= $page_height)
+		{
+			$mpdf->AddPage();
+		}
+		else
+		{
+			$mpdf->Ln();
+			$mpdf->Ln();
+		}
+		$mpdf->AddTicketDE($rma, $tickets[$index]->ticket->id);
+		$index++;
+	}
+	
+	//Address label
+	$mpdf->AddPage();
+	$mpdf->Cell(176,100,'',1);
+	$mpdf->Image($logo,20,25,60,25);
+	$mpdf->SetXY(90,40);
+	$mpdf->SetFont('Arial','',16);
+	$mpdf->MultiCell(90,8,"Cabman International BV\nz.HD. von der Serviceabteilung\nWilhelminapark 36\n5041 EC Tilburg, Niederlande", 1);
+	$mpdf->SetXY(25,100);
+	$mpdf->SetFont('Arial','',11);
+	$mpdf->Cell(50,6,'Absender: '. $parameters['companyName'] .', '. $parameters['companyPerson']);
+	$mpdf->Ln();
+	$mpdf->SetX(25);
+	$mpdf->Cell(50,6,'Bezug: Rücksendeformular '. date("Y-m-d"));
+	
+	$original_filename = $filename;
+	$filename = time()."_".$filename;
+	$path = WP_CONTENT_DIR.'/uploads/pdf/';
+	$dir = get_site_url().'/wp-content/uploads/pdf/';
+	$mpdf->Output($path.$filename, 'F');
+	
+	# send email
+	if(isset($parameters['companyEmail']) && filter_var( "helpdesk@cabman.nl", FILTER_VALIDATE_EMAIL ))
+	{
+		require_once(get_stylesheet_directory().'/lib/class.phpmailer.php');
+		$mail = new PHPMailer();
+		$mail->CharSet= "utf-8";
+		$mail->Host = "smtp.danego.net";
+		$mail->From = "support@cabman.de";
+		$mail->FromName = "Cabman Support";
+		$mail->AddReplyTo("noreply@euphoria-it.nl");
+		$mail->AddAddress($parameters['companyEmail']);
+		$mail->SetLanguage('nl', '/language/');
+		$mail->AddStringAttachment($mpdf->Output('', 'S'), $filename, "base64", 'application/pdf');
+		$mail->IsHTML(true);
+		
+		$mail->Subject  =  "Rücksendung Cabman"; // 
+		$mail->Body     =  "Sehr geehrte(r) Herr/Frau,<br><br/>Ihre Rücksendeanfrage ist korrekt bei uns eingegangen.<br/>Im Anhang finden Sie Ihr Rücksendeformular und ein Adressetikett.<br/>Drucken Sie Ihr Rücksendeformular aus und legen Sie es mit in das Paket.<br/>Kleben Sie das Adressetikett oben auf das Paket.<br/>Bitte frankieren Sie die Rücksendung ordnungsgemäß, um extra Kosten für Sie zu vermeiden.<br/><br/>Mit freundlichen Grüßen,<br/><br/>Cabman International"; 
+		$mail->Send();
+	}
+	
+  $attachement = $zendesk->UploadFile($filename, $dir, $path);
+  $attchJson = json_encode(
+			array(
+				"ticket" => array("comment"=>array("public"=>true, "body"=>"Rücksendeformular zugefügt.", "uploads"=>array($attachement->upload->token)))
+			)
+		);
+	foreach($tickets as $ticket)
+	{		
+		$data = $zendesk->attachFile("/tickets/".strval($ticket->ticket->id), $attchJson, "PUT");
+	}
+	
+	return $filename;
 }
 
 function generate_pdf($filename, $parameters, $tickets, $zendesk)
@@ -458,4 +624,105 @@ function update_custom_type() {
 		    $wp_post_types['product']->exclude_from_search = true;
 		}
 	}
+}
+
+
+
+
+
+global $sitepress;
+function woo_override_checkout_fields_billing( $fields ) {
+	$slang = ICL_LANGUAGE_CODE;
+	if ($slang == "nl") {
+		$fields['billing']['billing_country'] = array(
+	        'type'      => 'select',
+	        'options'   => array('NL' => 'Netherlands')
+	    );
+	}
+	if ($slang == "de") {
+		$fields['billing']['billing_country'] = array(
+	        'type'      => 'select',
+	        'options'   => array('DE' => 'Deutschland')
+	    );
+	    unset( $fields['billing']['vat_number'] );
+	}
+    return $fields;
+} 
+add_filter( 'woocommerce_checkout_fields' , 'woo_override_checkout_fields_billing' );
+
+function woo_override_checkout_fields_shipping( $fields ) { 
+	$slang = ICL_LANGUAGE_CODE;
+	if ($slang == "nl") {
+	    $fields['shipping']['shipping_country'] = array(
+	        'type'      => 'select',
+	        'options'   => array('NL' => 'Netherlands')
+	    );
+	}
+	if ($slang == "de") {
+	    $fields['shipping']['shipping_country'] = array(
+	        'type'      => 'select',
+	        'options'   => array('DE' => 'Deutschland')
+	    );
+	    unset( $fields['billing']['vat_number'] );
+	}
+    return $fields; 
+} 
+add_filter( 'woocommerce_checkout_fields' , 'woo_override_checkout_fields_shipping' );
+
+
+
+function disable_shipping_calc_on_cart( $show_shipping ) {
+    if( is_cart() ) {
+        return false;
+    }
+    return $show_shipping;
+}
+add_filter( 'woocommerce_cart_ready_to_calc_shipping', 'disable_shipping_calc_on_cart', 99 );
+
+
+add_filter('wc_session_expiration', 'so_26545001_filter_session_expired' );
+
+function so_26545001_filter_session_expired($seconds) {
+    return 60 * 60 * 24; // 24 hours
+}
+
+
+
+
+
+
+// Change sender adress
+add_filter( 'woocommerce_email_from_address', function( $from_email, $wc_email ){
+	global $woocommerce, $post;
+	$order = new WC_Order($post->ID);
+	$order_id = trim(str_replace('#', '', $order->get_order_number()));
+	
+	$order = wc_get_order( $order_id );
+	$order_data = $order->get_data();
+	$order_billing_country = $order_data['billing']['country'];
+	
+	if ($order_billing_country == 'NL') {
+    	if( $wc_email->id == 'customer_processing_order' )
+        	$from_email = 'info@cabman.nl';
+    }
+    if ($order_billing_country == 'DE') {
+    	if( $wc_email->id == 'customer_processing_order' )
+        	$from_email = 'info@cabman.de';
+    }
+    return $from_email;
+}, 10, 2 );
+
+
+
+
+
+add_action('admin_head', 'my_custom_fonts');
+
+function my_custom_fonts() {
+  echo '<style>
+    .wrap #message,
+    .wrap .activation-notice {
+    	display:none;
+    } 
+  </style>';
 }

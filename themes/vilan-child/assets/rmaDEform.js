@@ -14,26 +14,24 @@ jQuery( document ).ready(function($) {
 	});
 	
 	var productTags = {
-    BCT : "cabman_bct",
-    CS : "cabman_cs_i__ds",
-    Printer : "cabman_printer",
-    GRPSModem : "overig",
-    Audioboard : "overig",
-    Com_X : "overig",
-	MyPOS : "mypos_d200",
-    Other : "overig"
-  };
+		BCT : "cabman_bct",
+		Printer : "cabman_printer",
+		GRPSModem : "overig",
+		Audioboard : "overig",
+		Com_X : "overig",
+		MyPos : "mypos_d200",
+		Other : "overig"
+	};
 
-  var products = {
-    BCT : "Cabman BCT",
-    CS : "Cabman CS",
-    Printer : "Cabman printer",
-    GRPSModem : "GSM/GPRS Modem",
-    Audioboard : "Audioboard",
-    Com_X : "Com-X",
-	MyPOS : "myPOS D200/D210",
-    Other : "Anders, namelijk:"
-  };
+	var products = {
+		BCT : "Cabman BCT",
+		Printer : "Cabman printer",
+		GRPSModem : "GSM/GPRS Modem",
+		Audioboard : "Audioboard",
+		Com_X : "Com-X",
+		MyPos : "MyPOS",
+		Other : "Weitere, nämlich:"
+	};
 
 	function sendRMA()
 	{
@@ -48,31 +46,20 @@ jQuery( document ).ready(function($) {
 			rma.product_tag = productTags[$(row).find('select').val()];
 			rma.serial = $(row).find('input[id^="serial"]').val();
 			rma.complaint = $(row).find('input[id^="complaint"]').val();
-			rma.licensePlate = $(row).find('input[id^="licensePlate"]').val();
 			rma.other = $(row).find('input[id^="other"]').val();
 			
 			if(isNullOrEmpty(rma.product) || isNullOrEmpty(rma.serial)) {
-				errorString += 'Rij ' + (index + 1) + ' is niet voledig ingevuld.\n';
+				errorString += 'Reihe ' + (index + 1) + ' ist nicht komplett eingegeben.\n';
 				listComplete = false;
 				return false;
 			}
 			
-			if(rma.product === products.BCT)
-			{
-				rma.licensePlate = $(row).find('input[id^="licensePlate"]').val();		
-				if(isNullOrEmpty(rma.licensePlate))
-				{
-					errorString += 'Kenteken op rij ' + (index + 1) + ' is niet ingevuld.\n';
-					listComplete = false;
-					return false;
-				}
-			}
 			if(rma.product === products.Other)
 			{
 				rma.other = $(row).find('input[id^="other"]').val();		
 				if(isNullOrEmpty(rma.other))
 				{	
-					errorString += '"Anders, namelijk" op rij ' + (index + 1) + ' is niet ingevuld.\n';							
+					errorString += '"Weitere, nämlich" auf Reihe ' + (index + 1) + ' ist nicht eingegeben.\n';							
 					listComplete = false;
 					return false;
 				}
@@ -85,33 +72,37 @@ jQuery( document ).ready(function($) {
 		{
 			if(isNullOrEmpty($('#off_vest').val()))
 			{
-				errorString += 'Vestiging is verplicht.\n';		
+				errorString += 'Sitz des Unternehmens ist ein Pflichtfeld.\n';		
 			}
 			if(isNullOrEmpty($('#off_cont').val()))
 			{
-				errorString += 'Contact persoon is verplicht.\n';		
+				errorString += 'Ansprechpartner ist ein Pflichtfeld.\n';		
 			}
 			if(isNullOrEmpty($('#off_strn').val()))
 			{
-				errorString += 'Straatnaam is verplicht.\n';
+				errorString += 'Der Straßenname ist ein Pflichtfeld.\n';
 			}
 			if(isNullOrEmpty($('#off_huisn').val()))
 			{
-				errorString += 'Huisnummer is verplicht.\n';
+				errorString += 'Die Hausnummer ist ein Pflichtfeld.\n';
 			}
 			if(isNullOrEmpty($('#off_postc').val()))
 			{
-				errorString += 'Postcode is verplicht.\n';
+				errorString += 'Die Postleitzahl ist ein Pflichtfeld.\n';
 			}
 			if(isNullOrEmpty($('#off_stad').val()))
 			{
-				errorString += 'Plaats is verplicht.\n';
+				errorString += 'Stadt ist ein Pflichtfeld.\n';
+			}
+			if(isNullOrEmpty($('#off_land').val()))
+			{
+				errorString += 'Land ist ein Pflichtfeld.\n';
 			}
 		}
 		
 		if(!$("#termsofagreement:checked").length)
 		{
-			errorString += 'U dient akkoord te gaan met de algemene voorwaarden.\n';		
+			errorString += 'Sie müssen den Allgemeinen Geschäftsbedingungen zustimmen.\n';		
 		}
 		
 		if(!isNullOrEmpty(errorString))
@@ -135,13 +126,14 @@ jQuery( document ).ready(function($) {
 					companyStreet_number : (useAlternativeAddress ? ($('#off_strn').val() + ' ' + $('#off_huisn').val()) : organization.organization_fields.straat_huisnummer),				
 					companyPostalCode : (useAlternativeAddress ? $('#off_postc').val() : organization.organization_fields.postcode),
 					companyTown : (useAlternativeAddress ? $('#off_stad').val() : organization.organization_fields.plaats),
+					companyCountry : (useAlternativeAddress ? $('#off_land').val() : organization.organization_fields.land),
 					companyEmail : user.email,
 					rmas: rmas,
 					username : document.username,
 					password : document.password
 				};
 				
-			var data = { action: "send_rma", parameters: params };
+			var data = { action: "send_rmaDE", parameters: params };
 			
 			$.ajax({
 				url:ajaxurl, //"/wp-admin/admin-ajax.php",
@@ -156,19 +148,19 @@ jQuery( document ).ready(function($) {
 					if(endsWith(res.responseText, 'pdf'))
 					{			
 						$('#formContainer').hide();
-						notify("alert-success", "alert-danger", "Success!", "Formulier is verzonden");
+						notify("alert-success", "alert-danger", "Success!", "Ihr Rücksendeformular wurde erfolgreich verschickt");
 						$('.rmaImage').attr("style", "display: none;");
-						//window.open(res.responseText, '_blank');
+						//window.open(res.responseText, '_blank'); To avoid the pop-up on Microsoft Edge.
 					}
 					else
 					{
-						notify("alert-danger", "alert-success", "Error!", "Er ging iets mis met het versturen van de RMA");
+						notify("alert-danger", "alert-success", "Error!", "Es ist ein Fehler aufgetreten, bei Ihren Rücksendeformular");
 					}
 				},
 				error: function (req) {
 					$('#loaderContainer').hide();
 					$('#loader').hide();
-					notify("alert-danger", "alert-success", "Error!", "Er ging iets mis met het versturen van de RMA");
+					notify("alert-danger", "alert-success", "Error!", "Es ist ein Fehler aufgetreten, bei Ihren Rücksendeformular");
 				}
 			});
 		}
@@ -218,17 +210,14 @@ jQuery( document ).ready(function($) {
 		
 		if(selected.text() === products.BCT)
 		{
-			$('#licensePlateRow' + selectId).show();
 			$('#other' + selectId).hide();
 		}
 		else if(selected.text() === products.Other)
 		{
-			$('#licensePlateRow' + selectId).hide();
 			$('#other' + selectId).show();
 		}
 		else
 		{	
-			$('#licensePlateRow' + selectId).hide();
 			$('#other' + selectId).hide();
 		}
 	}
@@ -242,15 +231,15 @@ jQuery( document ).ready(function($) {
 			'<div class="product-fieldset top-separator" id="append-fieldset'+numrows+'">'+
 				'<button type="button" class="close" data-dismiss="append-fieldset'+numrows+'" aria-label="Close"><span aria-hidden="true" onclick="javascript: removeRow('+numrows+');">&times;</span></button>'+
 				'<div class="form-group col-md-6">'+
-					'<label class="sr-only" for="prod_selector'+numrows+'" id="lprod'+numrows+'">Product</label>'+
+					'<label class="sr-only" for="prod_selector'+numrows+'" id="lprod'+numrows+'">Produkt</label>'+
 					'<select class="form-control" id="prod_selector'+numrows+'" name="prod'+numrows+'" onchange="javascript: changeproduct(this);">'+
-		                    '<option value="" selected="selected" style="display:none">Selecteer product</option>';
+		                    '<option value="" selected="selected" style="display:none">Produktauswahl</option>';
 
 		for(product in products)
 		{
 			if(products[product] == products.overig)
 			{
-				elementString += '<option value="'+ product + '">Anders, namelijk:</option>';
+				elementString += '<option value="'+ product + '">Weitere, nämlich:</option>';
 			}
 			else
 			{
@@ -261,19 +250,15 @@ jQuery( document ).ready(function($) {
 		            '</div>'+
 		            '<div class="form-group col-md-6" id="other'+numrows+'" style="display: none;">'+
 		                '<label class="sr-only" for="other'+numrows+'" id="lother'+numrows+'">Other</label>'+
-		                '<input placeholder="Product" type="text" name="other'+numrows+'" id="other'+numrows+'" class="required form-control" />'+
+		                '<input placeholder="Produkt" type="text" name="other'+numrows+'" id="other'+numrows+'" class="required form-control" />'+
 		            '</div>'+
 		            '<div class="form-group col-md-6" id="serial'+numrows+'">'+    
-		                '<label class="sr-only" for="serial'+numrows+'" id="lserial'+numrows+'">Serienummer</label>'+
-		                '<input placeholder="Serienummer" type="text" name="serial'+numrows+'" id="serial'+numrows+'" class="required form-control" />'+
-		            '</div>'+
-		            '<div class="form-group col-md-6" id="licensePlateRow'+numrows+'">'+
-		                '<label class="sr-only" for="licensePlate'+numrows+'" id="llicensePlate'+numrows+'">Afgemeld bij RDW op kenteken</label>'+
-		                '<input placeholder="Afgemeld bij RDW op kenteken" type="text" name="licensePlate'+numrows+'" id="licensePlate'+numrows+'" class="required form-control" />'+
+		                '<label class="sr-only" for="serial'+numrows+'" id="lserial'+numrows+'">Seriennummer</label>'+
+		                '<input placeholder="Seriennummer" type="text" name="serial'+numrows+'" id="serial'+numrows+'" class="required form-control" />'+
 		            '</div>'+
 		            '<div class="form-group col-md-6">'+    
-		                '<label class="sr-only" for="complaint'+numrows+'" id="lcomplaint'+numrows+'">Klachtomschrijving</label>'+
-		                '<input placeholder="Klachtomschrijving" type="text" name="complaint'+numrows+'" id="complaint'+numrows+'" class="required form-control" />'+
+		                '<label class="sr-only" for="complaint'+numrows+'" id="lcomplaint'+numrows+'">Beschreibung der Problems</label>'+
+		                '<input placeholder="Beschreibung der Problems" type="text" name="complaint'+numrows+'" id="complaint'+numrows+'" class="required form-control" />'+
 		            '</div>'+
 		        '</div>'+
 		    '</div>';
@@ -322,19 +307,18 @@ jQuery( document ).ready(function($) {
 					$('#loggedAddress').html(organization.organization_fields.straat_huisnummer);
 					$('#loggedZip').html(organization.organization_fields.postcode);
 					$('#loggedTown').html(" " + (endsWith(organization.organization_fields.plaats, 'null') ? '' : organization.organization_fields.plaats));
-					$('#loggedCountry').html(user.country);
+					$('#loggedCountry').html(organization.organization_fields.land);
+					$('#loggedCountry').css('textTransform', 'capitalize');
 				}
 				else
 				{
-					notify("alert-danger", "alert-success", "Error!", "Gebruikersnaam of wachtwoord is onjuist.");
+					notify("alert-danger", "alert-success", "Error!", "Benutzername oder Passwort ist falsch.");
 				}
-				//console.log('success');
 			},
 			error: function (req) {
 				$('#loaderContainer').hide();
 				$('#loader').hide();
-				notify("alert-danger", "alert-success", "Error!", "Er ging iets mis met het aanvragen van de inbouw");
-				//console.log('error');
+				notify("alert-danger", "alert-success", "Error!", "Es ist ein Fehler aufgetreten, bei Ihrer Anfrage für Einbauanfrage");
 				console.log(req);
 			}
 		});
@@ -352,34 +336,30 @@ function removeRow(id)
 }
 
 function changeproduct(select)
-	{
-		var products = {
-      BCT : "Cabman BCT",
-      CS : "Cabman CS",
-      Printer : "Cabman printer",
-      GRPSModem : "GSM/GPRS Modem",
-      Audioboard : "Audioboard",
-      Com_X : "Com-X",
-	  MyPOS : "myPOS D200/D210",
-      Other : "Anders, namelijk:"
-    };
+{
+	var products = {
+		BCT : "Cabman BCT",
+		Printer : "Cabman printer",
+		GRPSModem : "GSM/GPRS Modem",
+		Audioboard : "Audioboard",
+		Com_X : "Com-X",
+		MyPos : "MyPos",
+		Other : "Weitere, nämlich:"
+	};
 	
 		var selectId = select.id.match(/\d+$/)[0],
 		selected = jQuery(select).find(':selected');
 		
 		if(selected.text() === products.BCT)
 		{
-			jQuery('#licensePlateRow' + selectId).show();
 			jQuery('#other' + selectId).hide();
 		}
 		else if(selected.text() === products.Other)
 		{
-			jQuery('#licensePlateRow' + selectId).hide();
 			jQuery('#other' + selectId).show();
 		}
 		else
 		{	
-			jQuery('#licensePlateRow' + selectId).hide();
 			jQuery('#other' + selectId).hide();
 		}
 	}

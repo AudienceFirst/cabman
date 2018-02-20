@@ -49,11 +49,6 @@ switch ($page_layout) {
     </div>
     
     <?php if ($page_layout != 'fullscreen') echo '<div class="container"><div class="row">'; ?>
-				<!--
-        <div id="loaderContainer" style="display:none;">
-            <div id="loader" style="display:none;">Loading...</div>
-        </div>
-        -->
 
         <div class="<?php echo esc_attr($page_content_class); ?>">
             
@@ -64,10 +59,6 @@ switch ($page_layout) {
 
             <div class="clearfix"></div>
             <div id="notify">
-                <!-- <div class="alert alert-success alert-dismissible" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <strong>Success!</strong><span class="desc">Formulier is verzonden.</span>
-                </div> -->
             </div>
             <div class="contact-form-wrapper" id="loginContainer">
                 <h3><?php _e('Inloggen met uw Zendesk account'); ?></h3>
@@ -144,15 +135,14 @@ switch ($page_layout) {
                             <div class="form-group col-md-6">    
                                 <label class="sr-only" for="prod_selector_1" id="lprod1"><?php _e( 'Anders', 'okthemes' ); ?></label>
                                 <select class="form-control" id="prod_selector_1" name="prod1">
-                                	<option value="">Selecteer product</option>
+                                  <option value=""  selected="selected" style="display:none">Selecteer product</option>
                                   <option value="BCT">Cabman BCT</option>
                                   <option value="CS">Cabman CS</option>
-                                  <option value="CSi">Cabman CSi</option>
                                   <option value="Printer">Cabman printer</option>
                                   <option value="GRPSModem">GSM/GPRS Modem</option>
-                                  <option value="RModem">RAM Modem</option>
                                   <option value="Audioboard">Audioboard</option>
                                   <option value="Com_X">Com-X</option>
+								  <option value="MyPOS">myPOS D200/D210</option>
                                   <option value="Other">Anders, namelijk:</option>
                                 </select>
                             </div>
@@ -192,8 +182,7 @@ switch ($page_layout) {
                 <p>
                     Bedankt voor uw RMA aanvraag.<br />
                     U ontvangt een bevestigingsmail. U dient de bijlage van deze mail af te drukken en toe te voegen aan uw pakket.
-                    <br /><br />
-                    <strong>Let op! Ons adres is gewijzigd:</strong>
+                    <br />
                     <br />
                     Euphoria Software<br />
                     Wilhelminapark 36<br />

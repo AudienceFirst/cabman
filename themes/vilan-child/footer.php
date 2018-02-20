@@ -7,6 +7,37 @@
  */
 ?>
 
+<style>
+html[lang=es-ES] .wc-gg-header-minicart,
+html[lang=en-US] .wc-gg-header-minicart {
+  display: none;
+}
+
+/*category and product on shop page*/
+html[lang="nl-NL"] body.post-type-archive-product.woocommerce-page .products .product.type-product {
+  display: none;
+}
+
+
+html[lang="de-DE"] body.post-type-archive-product.woocommerce-page .products .product-category {
+  display: none;
+}
+html[lang="de-DE"] body.post-type-archive-product.woocommerce-page .products .clearfix {
+  display: none!important;
+}
+html[lang="de-DE"] .tax-total {
+  display: none!important;
+}
+html[lang="de-DE"] .woocommerce-checkout .woocommerce-account-fields .create-account span {
+    float: left;
+    margin-left: 28px;
+}
+html[lang="de-DE"] .woocommerce-checkout .woocommerce-account-fields .create-account .input-checkbox {
+  margin-top: 8px;
+}
+
+</style>
+
         <footer class="site-footer">
         
         <?php /*?><?php _e( 'Subtotal', 'woocommerce' ); ?><?php */?>
@@ -45,6 +76,12 @@
         <?php } ?>
 
         <?php wp_footer(); ?>
+
+
+
+
+
+
 <script>
 	jQuery(document).ready(function() {
   		if(jQuery('html').attr('lang') == 'nl-NL'){

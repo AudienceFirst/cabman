@@ -34,7 +34,7 @@ function cabman_send_rma(){
 		else
 		{
 			$productName = property_exists($rma, 'other') ? $rma['other'] : $rma['product'];
-			$body = "Product: " . $productName . "\nSerienummer: " . $rma['serial'] . "\nKlacht:\n" . $rma['complaint'];
+			$body = "Product: " . $productName . "\nSerienummer: " . $rma['serial'] . "\nLand: " .  $parameters["companyCountry"] . "\nKlacht:\n" . $rma['complaint'];
 		}
 		
 		$jsonNewTicket = json_encode(array(
